@@ -10,10 +10,14 @@ from PyQt5.QtWidgets import *
 
 import numpy as np
 from tqdm import tqdm
-from pydub.playback import play
+import pydub.playback
+import simpleaudio
+from prefetch_generator import BackgroundGenerator
 
+import input.utils
 import input.pdfplumber as pdfplumber
 import input.pypdf2 as pypdf2
+import input.textract as textract
 
 import output.gtts as gtts
 
@@ -44,15 +48,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # play / pause
     def play(self):
-        for l in self.current_text:
-            self.tts_line(l)
+        self.tts(self.current_text)
 
 # outputs
-    def tts_line(self, line):
-        audio = gtts.convert(line)
-        print(type(audio), audio)
+    def tts_generator(self, text):
+        for line in text:
+            audio = gtts.convert(line)
+            yield audio
+        return
 
-        play(audio)
+    def tts(self, text):
+        gen = self.tts_generator(text)
+        for audio in BackgroundGenerator(gen, max_prefetch=2):
+            playback = simpleaudio.play_buffer(
+                audio.raw_data,
+                num_channels=audio.channels,
+                bytes_per_sample=audio.sample_width,
+                sample_rate=audio.frame_rate
+            )
+            time.sleep(audio.duration_seconds)
 
 # inputs
     def update_list(self):
@@ -61,7 +75,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.listWidget.setCurrentRow(self.current_line)
 
     def add_txt(self, filename):
-        raise NotImplementedError
+        self.current_text = input.utils.read_txt(filename)
+        self.current_line = 0
+        self.update_list()
 
     def add_pdf(self, filename):
         self.current_text = pdfplumber.convert(filename)
