@@ -92,6 +92,9 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
+        self.listWidget.itemPressed['QListWidgetItem*'].connect(MainWindow.textLineSelectionChanged)
+        self.spinBox_position.valueChanged['int'].connect(MainWindow.setCurrentLine)
+        self.pushButton_play.clicked.connect(MainWindow.play)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
