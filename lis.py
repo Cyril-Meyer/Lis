@@ -18,6 +18,7 @@ import input.utils
 import input.pdfplumber as pdfplumber
 import input.pypdf2 as pypdf2
 import input.textract as textract
+import input.ebooklib as ebooklib
 
 import output.gtts as gtts
 
@@ -33,6 +34,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.current_text = []
         self.current_line = 0
 
+        self.play_flag = False
+
+
 # slots
     # line selection
     def textLineSelectionChanged(self):
@@ -46,11 +50,33 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.spinBox_position.setValue(self.current_line)
             self.listWidget.setCurrentRow(self.current_line)
 
+    # input
+    def openFile(self):
+        f = QFileDialog.getOpenFileName(self, "Sélection un fichier")[0]
+        self.add_file(f)
+
     # play / pause
     def play(self):
+        self.pushButton_play.setEnabled(False)
+        self.pushButton_pause.setEnabled(True)
+
+        self.play_flag = True
         self.tts(self.current_text)
 
-# outputs
+        self.pushButton_play.setEnabled(True)
+        self.pushButton_pause.setEnabled(False)
+
+    def pause(self):
+        self.play_flag = False
+        self.pushButton_play.setEnabled(True)
+        self.pushButton_pause.setEnabled(False)
+
+    # quit
+    def closeEvent(self, event):
+        self.play_flag = False
+        app.quit()
+
+    # outputs
     def tts_generator(self, text):
         for line in text:
             audio = gtts.convert(line)
@@ -58,7 +84,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         return
 
     def tts(self, text):
-        gen = self.tts_generator(text)
+        gen = self.tts_generator(text[self.current_line:])
         for audio in BackgroundGenerator(gen, max_prefetch=2):
             playback = simpleaudio.play_buffer(
                 audio.raw_data,
@@ -66,7 +92,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 bytes_per_sample=audio.sample_width,
                 sample_rate=audio.frame_rate
             )
-            time.sleep(audio.duration_seconds)
+            from PyQt5.QtTest import QTest
+            for _ in range(int(audio.duration_seconds*10)+1):
+                QTest.qWait(100)
+                if not self.play_flag:
+                    playback.stop()
+                    return
 
 # inputs
     def update_list(self):
@@ -84,6 +115,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.current_line = 0
         self.update_list()
 
+    def add_epub(self, filename):
+        self.current_text = ebooklib.convert(filename)
+        self.current_line = 0
+        self.update_list()
+
+    def add_file(self, f):
+        if mimetypes.guess_type(f)[0] == 'text/plain':
+            self.add_txt(f)
+            return True
+        elif mimetypes.guess_type(f)[0] == 'application/pdf':
+            self.add_pdf(f)
+            return True
+        elif mimetypes.guess_type(f)[0] == 'application/epub+zip':
+            self.add_epub(f)
+            return True
+
     # Drag and Drop files : https://gist.github.com/peace098beat/db8ef7161508e6500ebe
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
@@ -94,12 +141,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def dropEvent(self, event):
         files = [u.toLocalFile() for u in event.mimeData().urls()]
         for f in files:
-            print(f, mimetypes.guess_type(f))
-            if mimetypes.guess_type(f)[0] == 'text/plain':
-                self.add_txt(f)
-                return
-            elif mimetypes.guess_type(f)[0] == 'application/pdf':
-                self.add_pdf(f)
+            if self.add_file(f):
                 return
 
 
