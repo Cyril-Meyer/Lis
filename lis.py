@@ -22,6 +22,8 @@ import input.textract as textract
 import input.ebooklib as ebooklib
 
 import output.gtts as gtts
+import output.tts as tts
+import output.pyttsx3 as pyttsx3
 
 from lisui import Ui_MainWindow
 
@@ -40,11 +42,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.pdf_engines = [pdfplumber, pypdf2, textract]
         self.epub_engines = [ebooklib]
-        self.tts_engines = [gtts]
+        self.tts_engines = [gtts, pyttsx3, tts]
 
         self.pdf_engines_names = ['pdfplumber', 'pypdf2', 'textract']
         self.epub_engines_names = ['ebooklib']
-        self.tts_engines_names = ['gtts']
+        self.tts_engines_names = ['GoogleTTS', 'pyttsx3', 'mozillaTTS']
 
         self.comboBox_pdf.addItems(self.pdf_engines_names)
         self.comboBox_epub.addItems(self.epub_engines_names)
@@ -91,14 +93,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         app.quit()
 
     # outputs
-    def tts_generator(self, text):
+    def tts_generator(self, text, engine):
         for line in text:
-            audio = gtts.convert(line)
+            audio = engine.convert(line)
             yield audio
         return
 
     def tts(self, text):
-        gen = self.tts_generator(text[self.current_line:])
+        gen = self.tts_generator(text[self.current_line:],
+                                 self.tts_engines[self.comboBox_tts.currentIndex()])
         for audio in BackgroundGenerator(gen, max_prefetch=2):
             playback = simpleaudio.play_buffer(
                 audio.raw_data,
@@ -107,7 +110,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 sample_rate=audio.frame_rate
             )
 
-            for _ in range(int(audio.duration_seconds*10)+1):
+            while playback.is_playing():
                 QTest.qWait(100)
                 if not self.play_flag:
                     playback.stop()
