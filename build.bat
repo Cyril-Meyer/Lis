@@ -1,0 +1,1 @@
+pyinstaller --name "Lis" --windowed --onefile --icon=media/icon.ico lis.py
