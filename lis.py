@@ -146,8 +146,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.add_txt(f)
             return True
         elif mimetypes.guess_type(f)[0] == 'application/pdf':
-            self.add_pdf(f)
-            return True
+            try:
+                self.add_pdf(f)
+                return True
+            except Exception as e:
+                print("add_pdf Exception:", e)
         elif mimetypes.guess_type(f)[0] == 'application/epub+zip':
             self.add_epub(f)
             return True
