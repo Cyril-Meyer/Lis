@@ -1,1 +1,1 @@
-pyinstaller --name "Lis" --icon=media/icon.ico lis.py
+pyinstaller --name "Lis" --icon=media/icon.ico --add-data="ffmpeg.exe;." --add-data="ffplay.exe;." --add-data="ffprobe.exe;." --add-data="pdftotext.exe;." --add-data="media/icon.png;media" --add-data="media/icon.ico;media" lis.py

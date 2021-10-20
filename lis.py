@@ -9,7 +9,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtTest import QTest
 
-import numpy as np
 from tqdm import tqdm
 import pydub.playback
 import simpleaudio
@@ -22,7 +21,7 @@ import input.textract as textract
 import input.ebooklib as ebooklib
 
 import output.gtts as gtts
-import output.tts as tts
+# import output.tts as tts
 import output.pyttsx3 as pyttsx3
 
 from lisui import Ui_MainWindow
@@ -42,11 +41,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.pdf_engines = [pdfplumber, pypdf2, textract]
         self.epub_engines = [ebooklib]
-        self.tts_engines = [gtts, pyttsx3, tts]
+        self.tts_engines = [gtts, pyttsx3]#, tts]
 
         self.pdf_engines_names = ['pdfplumber', 'pypdf2', 'textract']
         self.epub_engines_names = ['ebooklib']
-        self.tts_engines_names = ['GoogleTTS', 'pyttsx3', 'mozillaTTS']
+        self.tts_engines_names = ['GoogleTTS', 'pyttsx3']#, 'mozillaTTS']
 
         self.comboBox_pdf.addItems(self.pdf_engines_names)
         self.comboBox_epub.addItems(self.epub_engines_names)
