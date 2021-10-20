@@ -125,6 +125,9 @@
       </item>
       <item row="2" column="0">
        <widget class="QSpinBox" name="spinBox_position">
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::NoButtons</enum>
+        </property>
         <property name="maximum">
          <number>999999</number>
         </property>
@@ -159,6 +162,9 @@
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_pause">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="font">
          <font>
           <pointsize>18</pointsize>
@@ -181,7 +187,7 @@
  <connections>
   <connection>
    <sender>listWidget</sender>
-   <signal>itemPressed(QListWidgetItem*)</signal>
+   <signal>itemSelectionChanged()</signal>
    <receiver>MainWindow</receiver>
    <slot>textLineSelectionChanged()</slot>
    <hints>
@@ -227,10 +233,44 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_pause</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>pause()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>596</x>
+     <y>571</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_open</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>openFile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>65</x>
+     <y>28</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>setCurrentLine(int)</slot>
   <slot>textLineSelectionChanged()</slot>
   <slot>play()</slot>
+  <slot>pause()</slot>
+  <slot>openFile()</slot>
  </slots>
 </ui>

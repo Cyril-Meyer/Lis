@@ -69,6 +69,7 @@ class Ui_MainWindow(object):
         self.label_position.setObjectName("label_position")
         self.gridLayou_left.addWidget(self.label_position, 1, 0, 1, 1)
         self.spinBox_position = QtWidgets.QSpinBox(self.centralwidget)
+        self.spinBox_position.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.spinBox_position.setMaximum(999999)
         self.spinBox_position.setObjectName("spinBox_position")
         self.gridLayou_left.addWidget(self.spinBox_position, 2, 0, 1, 1)
@@ -82,6 +83,7 @@ class Ui_MainWindow(object):
         self.pushButton_play.setObjectName("pushButton_play")
         self.horizontalLayout_down.addWidget(self.pushButton_play)
         self.pushButton_pause = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_pause.setEnabled(False)
         font = QtGui.QFont()
         font.setPointSize(18)
         self.pushButton_pause.setFont(font)
@@ -92,9 +94,11 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.listWidget.itemPressed['QListWidgetItem*'].connect(MainWindow.textLineSelectionChanged)
+        self.listWidget.itemSelectionChanged.connect(MainWindow.textLineSelectionChanged)
         self.spinBox_position.valueChanged['int'].connect(MainWindow.setCurrentLine)
         self.pushButton_play.clicked.connect(MainWindow.play)
+        self.pushButton_pause.clicked.connect(MainWindow.pause)
+        self.pushButton_open.clicked.connect(MainWindow.openFile)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
