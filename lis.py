@@ -7,6 +7,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtTest import QTest
 
 import numpy as np
 from tqdm import tqdm
@@ -35,6 +36,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.current_line = 0
 
         self.play_flag = False
+
+
+        self.pdf_engines = [pdfplumber, pypdf2, textract]
+        self.epub_engines = [ebooklib]
+        self.tts_engines = [gtts]
+
+        self.pdf_engines_names = ['pdfplumber', 'pypdf2', 'textract']
+        self.epub_engines_names = ['ebooklib']
+        self.tts_engines_names = ['gtts']
+
+        self.comboBox_pdf.addItems(self.pdf_engines_names)
+        self.comboBox_epub.addItems(self.epub_engines_names)
+        self.comboBox_tts.addItems(self.tts_engines_names)
 
 
 # slots
@@ -92,12 +106,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 bytes_per_sample=audio.sample_width,
                 sample_rate=audio.frame_rate
             )
-            from PyQt5.QtTest import QTest
+
             for _ in range(int(audio.duration_seconds*10)+1):
                 QTest.qWait(100)
                 if not self.play_flag:
                     playback.stop()
                     return
+
+            self.current_line = min(len(self.current_text)-1, self.current_line + 1)
+            self.listWidget.setCurrentRow(self.current_line)
 
 # inputs
     def update_list(self):
@@ -111,16 +128,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.update_list()
 
     def add_pdf(self, filename):
-        self.current_text = pdfplumber.convert(filename)
+        engine = self.pdf_engines[self.comboBox_pdf.currentIndex()]
+        self.current_text = engine.convert(filename)
         self.current_line = 0
         self.update_list()
 
     def add_epub(self, filename):
-        self.current_text = ebooklib.convert(filename)
+        engine = self.epub_engines[self.comboBox_epub.currentIndex()]
+        self.current_text = engine.convert(filename)
         self.current_line = 0
         self.update_list()
 
     def add_file(self, f):
+        self.current_text = []
+        self.current_line = 0
         if mimetypes.guess_type(f)[0] == 'text/plain':
             self.add_txt(f)
             return True
